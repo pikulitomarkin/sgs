@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# Backups e dados locais
+deploy/db_data/
+**/db_data/
+*.sql
+*.sql.gz
+backup/
+backups/
+
+# Logs
+*.log
+logs/
+
+# Node (se houver build local)
+node_modules/
+dist/
+.npm/
+
+# Temporários
+tmp/
+temp/
+*.tmp

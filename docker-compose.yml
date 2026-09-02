@@ -1,0 +1,107 @@
+# ============================================================
+# SGS — NovoSGA (deploy para cliente)
+# Stack: NovoSGA 2.2-standalone + MySQL 8 + Mercure + Painel + Triagem
+# ============================================================
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: sgs-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-novosga2}
+      MYSQL_USER: ${DB_USER:-novosga}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-MySQL_App_P4ssW0rd}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-MySQL_r00t_P4ssW0rd}
+      TZ: ${TZ:-America/Sao_Paulo}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sgs_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_ROOT_PASSWORD:-MySQL_r00t_P4ssW0rd}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  mercure:
+    image: novosga/mercure:v0.11
+    container_name: sgs-mercure
+    restart: always
+    ports:
+      - "${MERCURE_PORT:-3000}:3000"
+    environment:
+      SERVER_NAME: ":3000"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_EXTRA_DIRECTIVES: "anonymous 1; cors_origins *"
+      TZ: ${TZ:-America/Sao_Paulo}
+    networks:
+      - sgs_net
+
+  novosga:
+    image: novosga/novosga:2.2-standalone
+    container_name: sgs-novosga
+    restart: always
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+      mercure:
+        condition: service_started
+    ports:
+      - "${APP_PORT:-80}:8080"
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      DATABASE_URL: "mysql://${DB_USER:-novosga}:${DB_PASSWORD:-MySQL_App_P4ssW0rd}@mysqldb:3306/${DB_NAME:-novosga2}?charset=utf8mb4&serverVersion=8.0"
+      NOVOSGA_ADMIN_USERNAME: ${NOVOSGA_ADMIN_USERNAME:-admin}
+      NOVOSGA_ADMIN_PASSWORD: ${NOVOSGA_ADMIN_PASSWORD:-123456}
+      NOVOSGA_ADMIN_FIRSTNAME: ${NOVOSGA_ADMIN_FIRSTNAME:-Administrador}
+      NOVOSGA_ADMIN_LASTNAME: ${NOVOSGA_ADMIN_LASTNAME:-SGS}
+      NOVOSGA_UNITY_NAME: ${NOVOSGA_UNITY_NAME:-Cartorio SGS}
+      NOVOSGA_UNITY_CODE: ${NOVOSGA_UNITY_CODE:-SGS01}
+      NOVOSGA_NOPRIORITY_NAME: ${NOVOSGA_NOPRIORITY_NAME:-Normal}
+      NOVOSGA_NOPRIORITY_DESCRIPTION: ${NOVOSGA_NOPRIORITY_DESCRIPTION:-Atendimento normal}
+      NOVOSGA_PRIORITY_NAME: ${NOVOSGA_PRIORITY_NAME:-Prioridade}
+      NOVOSGA_PRIORITY_DESCRIPTION: ${NOVOSGA_PRIORITY_DESCRIPTION:-Atendimento prioritario}
+      NOVOSGA_PLACE_NAME: ${NOVOSGA_PLACE_NAME:-Guiche}
+      TZ: ${TZ:-America/Sao_Paulo}
+      APP_LANGUAGE: ${APP_LANGUAGE:-pt_BR}
+      MERCURE_URL: http://mercure:3000/.well-known/mercure
+      MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL:-http://127.0.0.1:3000/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+    networks:
+      - sgs_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 8
+      start_period: 90s
+
+  painel:
+    image: novosga/panel-app:v2.1.0
+    container_name: sgs-painel
+    restart: always
+    depends_on:
+      - novosga
+    ports:
+      - "${PAINEL_PORT:-8080}:80"
+    networks:
+      - sgs_net
+
+  triagem:
+    image: novosga/triage-app:v2.1.0
+    container_name: sgs-triagem
+    restart: always
+    depends_on:
+      - novosga
+    ports:
+      - "${TRIAGEM_PORT:-8081}:80"
+    networks:
+      - sgs_net
+
+volumes:
+  db_data:
+
+networks:
+  sgs_net:
+    driver: bridge
