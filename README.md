@@ -33,7 +33,7 @@ cd sgs
 cp .env.example .env
 nano .env
 # Ajuste MERCURE_PUBLIC_URL para o IP local do servidor, ex:
-# MERCURE_PUBLIC_URL=http://192.168.18.176:3000/.well-known/mercure
+# MERCURE_PUBLIC_URL=http://192.168.18.54:3000/.well-known/mercure
 
 # 3. Subir
 bash scripts/install.sh
@@ -75,7 +75,7 @@ docker compose pull && docker compose up -d
 
 ## Hardware do cliente
 
-- Servidor: Dell OptiPlex (Debian) — IP típico `192.168.18.176`
+- Servidor: Dell OptiPlex (Debian) — IP típico `192.168.18.54`
 - Impressora: Bematech MP-4200 TH (USB/Ethernet, porta 9100)
 - Painel: Smart TV TCL (browser em `:8080`)
 - Totem: tablet/navegador em `:8081`

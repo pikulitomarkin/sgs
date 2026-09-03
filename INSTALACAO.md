@@ -23,7 +23,7 @@ sudo nano .env
 Ajuste obrigatório:
 
 ```env
-MERCURE_PUBLIC_URL=http://192.168.18.176:3000/.well-known/mercure
+MERCURE_PUBLIC_URL=http://192.168.18.54:3000/.well-known/mercure
 NOVOSGA_ADMIN_PASSWORD=<senha-forte>
 DB_PASSWORD=<senha-forte>
 DB_ROOT_PASSWORD=<senha-forte>

@@ -19,7 +19,7 @@ window.SGS_PAINEL_CONFIG = {
   pollIntervalMs: 3000,
   useMercure: true,
   // IP do servidor na LAN (TV/guichês)
-  mercureUrl: "http://192.168.18.176:3000/.well-known/mercure",
+  mercureUrl: "http://192.168.18.54:3000/.well-known/mercure",
 
   // Exibição
   showAtendente: true,

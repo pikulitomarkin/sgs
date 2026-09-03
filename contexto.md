@@ -7,7 +7,7 @@
 | Nome | SGS — Gerenciamento de Senhas (NovoSGA) |
 | Tipo | Pacote de deploy Docker para cliente |
 | Stack | NovoSGA 2.2-standalone + MySQL 8 + Mercure + panel-app + triage-app |
-| Servidor cliente | Dell OptiPlex `sgs` — `192.168.18.176` (Debian) |
+| Servidor cliente | Dell OptiPlex `sgs` — `192.168.18.54` (Debian) |
 | Timezone | America/Sao_Paulo |
 
 ## Status (Prompt 0)
