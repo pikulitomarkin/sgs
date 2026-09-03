@@ -99,6 +99,36 @@ services:
     networks:
       - sgs_net
 
+  # Totem customizado — botões Normal e Preferencial
+  totem:
+    image: nginx:alpine
+    container_name: sgs-totem
+    restart: always
+    depends_on:
+      - novosga
+    ports:
+      - "${TOTEM_PORT:-8082}:80"
+    volumes:
+      - ./totem:/usr/share/nginx/html:ro
+      - ./totem/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - sgs_net
+
+  # Painel TV customizado — senha + guichê + nome do atendente
+  painel-tv:
+    image: nginx:alpine
+    container_name: sgs-painel-tv
+    restart: always
+    depends_on:
+      - novosga
+    ports:
+      - "${PAINEL_TV_PORT:-8083}:80"
+    volumes:
+      - ./painel:/usr/share/nginx/html:ro
+      - ./painel/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - sgs_net
+
 volumes:
   db_data:
 

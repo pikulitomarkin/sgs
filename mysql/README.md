@@ -1,0 +1,2 @@
+-- Opcional: se o usuário da app não tiver permissão, execute no container:
+-- docker compose exec mysqldb mysql -uroot -p -e "GRANT ALL ON novosga2.* TO 'novosga'@'%'; FLUSH PRIVILEGES;"

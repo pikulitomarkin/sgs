@@ -61,13 +61,28 @@ Totem: Chrome com `--kiosk --kiosk-printing`.
 1. Login em `http://IP/` → admin
 2. Ativar serviços na unidade
 3. Abrir painel `http://IP:8080/` e apontar para `http://IP/`
-4. Abrir triagem `http://IP:8081/` e configurar API/cliente OAuth no admin
-5. **Não use** botões customizados que chamam `emitirTabletNormal` — use a triagem oficial
+4. Abrir **totem customizado** `http://IP:8082/` (botões Normal e Preferencial)
+5. Abrir **painel TV** `http://IP:8083/` (senha + guichê + nome do atendente)
+6. No admin NovoSGA, criar **Clientes OAuth** (API):
+   - `totem` / `totemsecret`
+   - `painel` / `painelsecret`
+7. Ajustar `totem/config.js` e `painel/config.js` (unidade, serviços, usuário)
+8. Em **Usuários**, preencha **Nome** e **Sobrenome** de cada atendente (aparece no painel)
+9. No guichê, ao abrir Atendimento, selecione o **número do guichê** antes de chamar
+10. No tablet: Chrome `--kiosk --kiosk-printing http://IP:8082/`
+11. Na TV: browser em tela cheia `http://IP:8083/`
 
 ## 6. Checklist de aceite
 
-- [ ] Emitir senha na triagem oficial
+- [ ] Emitir senha no totem (`:8082`)
 - [ ] Impressão física
-- [ ] Chamar no guichê
-- [ ] Aparecer na TV sem F5
+- [ ] Chamar no guichê (com número do guichê selecionado)
+- [ ] TV (`:8083`) mostra **senha + guichê + nome do atendente**
 - [ ] Reiniciar servidor e stack volta sozinha
+
+## 7. Firewall
+
+```bash
+sudo ufw allow 8082/tcp
+sudo ufw allow 8083/tcp
+```

@@ -10,7 +10,9 @@ Baseado na documentação oficial: [NovoSGA Docker](https://novosga.org/docs/#/2
 |---------|--------|--------------|
 | NovoSGA | `novosga/novosga:2.2-standalone` | 80 |
 | Painel (TV) | `novosga/panel-app:v2.1.0` | 8080 |
-| Triagem (totem) | `novosga/triage-app:v2.1.0` | 8081 |
+| Triagem oficial | `novosga/triage-app:v2.1.0` | 8081 |
+| **Totem customizado** | nginx + `totem/` | **8082** |
+| **Painel TV (guichê + atendente)** | nginx + `painel/` | **8083** |
 | Mercure | `novosga/mercure:v0.11` | 3000 |
 | MySQL 8 | `mysql:8.0` | interno |
 
@@ -45,9 +47,19 @@ bash scripts/test.sh
 ```text
 Admin / Guichê:  http://IP_DO_SERVIDOR/
 Painel TV:       http://IP_DO_SERVIDOR:8080/
-Triagem:         http://IP_DO_SERVIDOR:8081/
+Triagem oficial: http://IP_DO_SERVIDOR:8081/
+Totem (botões):  http://IP_DO_SERVIDOR:8082/
+Painel TV:       http://IP_DO_SERVIDOR:8083/   ← senha + guichê + atendente
 Mercure:         http://IP_DO_SERVIDOR:3000/.well-known/mercure
 ```
+
+### Totem Normal / Preferencial
+
+Abra `http://IP:8082/` no tablet. Configure OAuth e IDs em `totem/config.js` (ver `INSTALACAO.md`).
+
+### Painel na TV (guichê + nome do atendente)
+
+Abra `http://IP:8083/` na Smart TV. Configure OAuth em `painel/config.js`.
 
 Login padrão (trocar depois): `admin` / `123456`
 

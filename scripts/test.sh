@@ -34,6 +34,8 @@ check_http "novosga-login" "http://127.0.0.1:${APP_PORT:-80}/login"
 check_http "novosga-root"  "http://127.0.0.1:${APP_PORT:-80}/"
 check_http "painel"        "http://127.0.0.1:${PAINEL_PORT:-8080}/"
 check_http "triagem"       "http://127.0.0.1:${TRIAGEM_PORT:-8081}/"
+check_http "totem"         "http://127.0.0.1:${TOTEM_PORT:-8082}/"
+check_http "painel-tv"     "http://127.0.0.1:${PAINEL_TV_PORT:-8083}/"
 check_http "mercure"       "http://127.0.0.1:${MERCURE_PORT:-3000}/.well-known/mercure"
 
 echo ""

@@ -31,9 +31,21 @@
 4. Mercure notifica painel TV em tempo real
 5. Atendimento / encerramento no guichê
 
+## Totem customizado
+
+- URL: `:8082/`
+- Funções: `emitirTabletNormal` / `emitirTabletPreferencial` (definidas em `totem/app.js`)
+- Proxy nginx `/api` → container `novosga` (sem CORS)
+
+## Painel TV customizado
+
+- URL: `:8083/`
+- Exibe: senha + guichê (`local`/`numeroLocal`) + nome do atendente (`usuario`)
+- Fonte: `GET /api/unidades/{id}/painel` + `GET /api/atendimentos/{id}`
+
 ## Bug conhecido (cliente)
 
-- Console: `emitirTabletNormal is not defined` → tela customizada quebrada; usar triagem oficial `:8081` ou corrigir JS do totem.
+- Instalação antiga sem `emitirTabletNormal` → usar este totem em `:8082`.
 
 ## Decisões
 
