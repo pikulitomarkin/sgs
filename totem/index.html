@@ -4,10 +4,132 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Retire sua senha</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <style>
+    /* CSS crítico inline — garante 50/50 mesmo se styles.css estiver em cache antigo */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: system-ui, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .split {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+    }
+    .half {
+      border: 0;
+      width: 100%;
+      height: 100%;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+    .half-normal { background: #1b8f4a; }
+    .half-pref { background: #d32f2f; }
+    .half:active { filter: brightness(0.9); }
+    .half:disabled { opacity: 0.65; cursor: wait; }
+    .half-title {
+      font-size: clamp(2.8rem, 9vw, 6rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+    .half-sub {
+      font-size: clamp(1.1rem, 2.8vw, 1.6rem);
+      font-weight: 600;
+      opacity: 0.95;
+      max-width: 18ch;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .status {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 5;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.45);
+      font-size: 1rem;
+      font-weight: 600;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .status:empty { display: none; }
+    .status.error { background: rgba(127, 29, 29, 0.92); }
+    .ticket-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 1.25rem;
+      background: rgba(0,0,0,0.55);
+    }
+    .ticket-overlay[hidden] { display: none !important; }
+    .ticket-card {
+      width: min(100%, 420px);
+      background: #fff;
+      color: #0b1220;
+      border-radius: 1.25rem;
+      padding: 1.6rem 1.5rem 1.4rem;
+      text-align: center;
+    }
+    .ticket-type {
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+    .ticket-number {
+      margin: 0.7rem 0 0.35rem;
+      font-size: clamp(4rem, 18vw, 6rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .ticket-service, .ticket-time, .ticket-msg {
+      font-size: 1.05rem;
+      opacity: 0.75;
+    }
+    .ticket-msg { margin-top: 0.85rem; font-weight: 700; opacity: 1; }
+    .btn-ok {
+      margin-top: 1.2rem;
+      width: 100%;
+      border: 0;
+      border-radius: 0.9rem;
+      padding: 1.05rem;
+      background: #0b1220;
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .print-only { display: none; }
+    @media (max-width: 700px) and (orientation: portrait) {
+      .split {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <main class="split" id="home">
@@ -37,7 +159,7 @@
 
   <div id="printArea" class="print-only" aria-hidden="true"></div>
 
-  <script src="config.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="config.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
