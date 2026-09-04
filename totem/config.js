@@ -1,4 +1,4 @@
-// Configuração do totem SGS — servidor 192.168.18.54
+// Totem — 2º Ofício de Notas e Registro de Imóveis (Tabuleiro do Norte - CE)
 window.SGS_TOTEM_CONFIG = {
   apiBase: "",
 
@@ -8,14 +8,14 @@ window.SGS_TOTEM_CONFIG = {
   password: "00351master",
 
   unidadeId: 2,
-  // Normal = sigla A | Preferencial = sigla P (serviços diferentes)
+  // Normal = A (serviço 6) | Preferencial = P (serviço 7)
   servicoId: 6,
   servicoNormalId: 6,
-  servicoPreferencialId: 0,
+  servicoPreferencialId: 7,
   prioridadeNormalId: 3,
   prioridadePreferencialId: 4,
 
   autoPrint: true,
   autoCloseMs: 8000,
-  unidadeNome: "Cartório SGS"
+  unidadeNome: "2º Ofício de Notas e Registro de Imóveis"
 };

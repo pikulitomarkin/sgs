@@ -67,9 +67,11 @@
 
     try {
       var token = await obterToken();
+      var sid = Number(servicoId);
+      if (!sid) sid = Number(cfg.servicoId || 1);
       var payload = {
         unidade: Number(cfg.unidadeId || 1),
-        servico: Number(servicoId || cfg.servicoId || 1),
+        servico: sid,
         prioridade: Number(prioridadeId)
       };
 

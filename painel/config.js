@@ -1,4 +1,4 @@
-// Configuração do painel TV — servidor 192.168.18.54
+// Painel TV — 2º Ofício de Notas e Registro de Imóveis
 window.SGS_PAINEL_CONFIG = {
   apiBase: "",
 
@@ -8,7 +8,7 @@ window.SGS_PAINEL_CONFIG = {
   password: "00351master",
 
   unidadeId: 2,
-  unidadeNome: "Cartório SGS",
+  unidadeNome: "2º Ofício de Notas e Registro de Imóveis — Tabuleiro do Norte/CE",
   servicos: "6,7",
 
   pollIntervalMs: 2000,
