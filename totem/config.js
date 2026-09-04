@@ -1,27 +1,21 @@
-// Configuração do totem SGS
-// Em Docker, API_BASE usa o proxy nginx (/api → novosga)
+// Configuração do totem SGS — servidor 192.168.18.54
 window.SGS_TOTEM_CONFIG = {
-  // URL base da API (vazio = mesma origem via proxy /api)
   apiBase: "",
 
-  // Credenciais OAuth (Admin NovoSGA → API / Clientes)
-  clientId: "totem",
-  clientSecret: "totemsecret",
+  clientId: "de68badb6f990b5ec99d5fad8f441d50",
+  clientSecret: "57355874b476cf0f3fdc0088b6661b334336fa5485ece87744c63da020d7681b4ed0aa7ad1e886e9c67d41b2d78a369f5a25223d28a979e87ea3626f090cdb27",
   username: "admin",
   password: "00351master",
 
-  // IDs do sistema (confirme no admin após instalar)
-  unidadeId: 1,
-  servicoId: 1,
-  prioridadeNormalId: 1,
-  prioridadePreferencialId: 2,
+  unidadeId: 2,
+  // Normal = sigla A | Preferencial = sigla P (serviços diferentes)
+  servicoId: 6,
+  servicoNormalId: 6,
+  servicoPreferencialId: 0,
+  prioridadeNormalId: 3,
+  prioridadePreferencialId: 4,
 
-  // Impressão automática após emitir
   autoPrint: true,
-
-  // Tempo (ms) para fechar o cartão da senha automaticamente
   autoCloseMs: 8000,
-
-  // Nome exibido
   unidadeNome: "Cartório SGS"
 };

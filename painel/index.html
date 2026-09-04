@@ -6,7 +6,7 @@
   <title>SGS — Painel de Chamadas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700;800&family=Fraunces:opsz,wght@9..144,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -20,15 +20,16 @@
     </header>
 
     <section class="main-call" id="mainCall">
-      <p class="label">Senha chamada</p>
+      <p class="label">Senha</p>
       <p class="senha" id="senhaNumero">—</p>
       <p class="prioridade" id="senhaPrioridade"></p>
 
-      <div class="meta">
-        <div class="meta-card">
-          <span class="meta-label">Guichê</span>
-          <span class="meta-value" id="guiche">—</span>
-        </div>
+      <div class="guiche-block">
+        <span class="meta-label">Guichê</span>
+        <span class="guiche-value" id="guiche">—</span>
+      </div>
+
+      <div class="meta secondary">
         <div class="meta-card">
           <span class="meta-label">Atendente</span>
           <span class="meta-value" id="atendente">—</span>
@@ -40,7 +41,7 @@
     </section>
 
     <aside class="history">
-      <h2>Últimas chamadas</h2>
+      <h2>Últimas</h2>
       <ul id="historyList"></ul>
     </aside>
   </div>

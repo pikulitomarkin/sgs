@@ -60,7 +60,7 @@
     return tokenCache.accessToken;
   }
 
-  async function emitirSenha(prioridadeId, tipoLabel) {
+  async function emitirSenha(prioridadeId, tipoLabel, servicoId) {
     if (busy) return;
     setBusy(true);
     setStatus("Emitindo senha…");
@@ -69,7 +69,7 @@
       var token = await obterToken();
       var payload = {
         unidade: Number(cfg.unidadeId || 1),
-        servico: Number(cfg.servicoId || 1),
+        servico: Number(servicoId || cfg.servicoId || 1),
         prioridade: Number(prioridadeId)
       };
 
@@ -168,11 +168,19 @@
 
   // Funções usadas pelos botões (corrige o erro emitirTabletNormal is not defined)
   window.emitirTabletNormal = function emitirTabletNormal() {
-    return emitirSenha(cfg.prioridadeNormalId || 1, "Normal");
+    return emitirSenha(
+      cfg.prioridadeNormalId || 1,
+      "Normal",
+      cfg.servicoNormalId || cfg.servicoId || 1
+    );
   };
 
   window.emitirTabletPreferencial = function emitirTabletPreferencial() {
-    return emitirSenha(cfg.prioridadePreferencialId || 2, "Preferencial");
+    return emitirSenha(
+      cfg.prioridadePreferencialId || 2,
+      "Preferencial",
+      cfg.servicoPreferencialId || cfg.servicoId || 1
+    );
   };
 
   // aliases

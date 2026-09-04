@@ -1,31 +1,26 @@
-// Configuração do painel de chamadas (TV / monitor)
+// Configuração do painel TV — servidor 192.168.18.54
 window.SGS_PAINEL_CONFIG = {
-  // Vazio = mesma origem via proxy nginx /api
   apiBase: "",
 
-  // OAuth (Admin NovoSGA → API / Clientes)
-  clientId: "painel",
-  clientSecret: "painelsecret",
+  clientId: "de68badb6f990b5ec99d5fad8f441d50",
+  clientSecret: "57355874b476cf0f3fdc0088b6661b334336fa5485ece87744c63da020d7681b4ed0aa7ad1e886e9c67d41b2d78a369f5a25223d28a979e87ea3626f090cdb27",
   username: "admin",
   password: "00351master",
 
-  // Unidade e serviços exibidos
-  unidadeId: 1,
+  unidadeId: 2,
   unidadeNome: "Cartório SGS",
-  // IDs separados por vírgula. Vazio = todos os serviços da unidade
-  servicos: "",
+  servicos: "6,7",
 
-  // Atualização
-  pollIntervalMs: 3000,
+  pollIntervalMs: 2000,
   useMercure: true,
-  // IP do servidor na LAN (TV/guichês)
   mercureUrl: "http://192.168.18.54:3000/.well-known/mercure",
 
-  // Exibição
   showAtendente: true,
   speak: true,
+  speakAtendente: false,
+  speakRate: 0.85,
+  speakRepeats: 2,
   sound: true,
 
-  // Prefixo do local na tela (ex.: Guichê 1)
   localPrefixFallback: "Guichê"
 };

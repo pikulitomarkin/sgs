@@ -123,18 +123,63 @@
     }
   }
 
+  function speakDigits(numStr) {
+    var map = {
+      "0": "zero", "1": "um", "2": "dois", "3": "três", "4": "quatro",
+      "5": "cinco", "6": "seis", "7": "sete", "8": "oito", "9": "nove"
+    };
+    return String(numStr).split("").map(function (c) {
+      return map[c] || c;
+    }).join(" ");
+  }
+
+  function speakSenhaText(senha) {
+    var m = String(senha || "").match(/^([A-Za-zÀ-ÿ]+)\s*(\d+)$/);
+    if (!m) return String(senha || "");
+    return m[1].toUpperCase() + " " + speakDigits(m[2]);
+  }
+
+  function speakGuicheText(guiche) {
+    var g = String(guiche || "");
+    var m = g.match(/(\d+)\s*$/);
+    if (m) {
+      return g.replace(m[1], speakDigits(m[1]));
+    }
+    return g;
+  }
+
   function speakCall(senha, guiche, atendente) {
     if (!cfg.speak || !window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
-      var texto = "Senha " + senha.split("").join(" ") + ". " + guiche;
-      if (atendente && atendente !== "—") {
+
+      var texto =
+        "Senha " + speakSenhaText(senha) +
+        ", " + speakGuicheText(guiche);
+
+      if (cfg.speakAtendente && atendente && atendente !== "—") {
         texto += ". Atendente " + atendente;
       }
-      var utter = new SpeechSynthesisUtterance(texto);
-      utter.lang = "pt-BR";
-      utter.rate = 0.95;
-      window.speechSynthesis.speak(utter);
+
+      var repeats = Number(cfg.speakRepeats != null ? cfg.speakRepeats : 2);
+      var rate = Number(cfg.speakRate || 0.85);
+      var i = 0;
+
+      function speakOnce() {
+        if (i >= repeats) return;
+        i += 1;
+        var utter = new SpeechSynthesisUtterance(texto);
+        utter.lang = "pt-BR";
+        utter.rate = rate;
+        utter.pitch = 1;
+        utter.volume = 1;
+        utter.onend = function () {
+          if (i < repeats) setTimeout(speakOnce, 400);
+        };
+        window.speechSynthesis.speak(utter);
+      }
+
+      speakOnce();
     } catch (e) {
       console.warn(e);
     }
