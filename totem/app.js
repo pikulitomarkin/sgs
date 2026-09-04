@@ -5,6 +5,7 @@
   var busy = false;
   var tokenCache = { accessToken: null, expiresAt: 0 };
   var closeTimer = null;
+  var DIGITS = 3;
 
   function $(id) {
     return document.getElementById(id);
@@ -30,6 +31,58 @@
     return base + path;
   }
 
+  function pad3(n) {
+    var s = String(n == null ? "" : n).replace(/\D/g, "");
+    if (!s) s = "0";
+    var d = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : DIGITS);
+    while (s.length < d) s = "0" + s;
+    return s;
+  }
+
+  /** Sempre A001 / P001 — nunca A1 ou P5 */
+  function senhaFinal(sigla, numero) {
+    var letter = String(sigla || "").trim().toUpperCase().replace(/[^A-Z]/g, "");
+    return letter + pad3(numero);
+  }
+
+  function normalizarTextoSenha(texto) {
+    var raw = String(texto || "").trim().toUpperCase();
+    var m = raw.match(/^([A-Z]+)\s*0*(\d+)$/);
+    if (m) return senhaFinal(m[1], m[2]);
+    return raw || "—";
+  }
+
+  function extrairSenha(atendimento) {
+    if (!atendimento) return "—";
+
+    // campos soltos do NovoSGA
+    if (atendimento.senhaSigla != null || atendimento.senhaNumero != null) {
+      return senhaFinal(atendimento.senhaSigla, atendimento.senhaNumero);
+    }
+    if (atendimento.siglaSenha != null || atendimento.numeroSenha != null) {
+      return senhaFinal(atendimento.siglaSenha, atendimento.numeroSenha);
+    }
+
+    if (atendimento.senha && typeof atendimento.senha === "object") {
+      var s = atendimento.senha;
+      if (s.sigla != null || s.numero != null) {
+        return senhaFinal(s.sigla, s.numero);
+      }
+      if (s.numeroFormatado) return normalizarTextoSenha(s.numeroFormatado);
+    }
+
+    if (typeof atendimento.senha === "string") {
+      return normalizarTextoSenha(atendimento.senha);
+    }
+
+    // fallback: às vezes vem no topo
+    if (atendimento.sigla || atendimento.numero != null) {
+      return senhaFinal(atendimento.sigla, atendimento.numero);
+    }
+
+    return "—";
+  }
+
   async function obterToken() {
     var agora = Date.now();
     if (tokenCache.accessToken && tokenCache.expiresAt > agora + 30000) {
@@ -51,7 +104,7 @@
 
     if (!resp.ok) {
       var errText = await resp.text();
-      throw new Error("Falha na autenticação (" + resp.status + "). Cadastre o cliente OAuth no admin. " + errText);
+      throw new Error("Falha na autenticação (" + resp.status + "). " + errText);
     }
 
     var data = await resp.json();
@@ -67,10 +120,9 @@
 
     try {
       var token = await obterToken();
-      var sid = Number(servicoId);
-      if (!sid) sid = Number(cfg.servicoId || 1);
+      var sid = Number(servicoId) || Number(cfg.servicoId || 6);
       var payload = {
-        unidade: Number(cfg.unidadeId || 1),
+        unidade: Number(cfg.unidadeId || 2),
         servico: sid,
         prioridade: Number(prioridadeId)
       };
@@ -90,6 +142,7 @@
       }
 
       var atendimento = await resp.json();
+      console.log("[totem] atendimento", atendimento);
       mostrarTicket(atendimento, tipoLabel);
       setStatus("");
     } catch (e) {
@@ -98,49 +151,6 @@
     } finally {
       setBusy(false);
     }
-  }
-
-  function pad(n, size) {
-    var s = String(n == null ? "" : n).replace(/\D/g, "");
-    var digits = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : 3);
-    while (s.length < (size || digits)) s = "0" + s;
-    return s;
-  }
-
-  /** Formato alinhado ao painel TV: A001, P001 */
-  function formatarSenha(sigla, numero) {
-    var letter = String(sigla || "").trim().toUpperCase();
-    var digits = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : 3);
-    if (!letter && numero != null) return pad(numero, digits);
-    if (numero == null || numero === "") return letter || "—";
-    return letter + pad(numero, digits);
-  }
-
-  function extrairSenha(atendimento) {
-    if (!atendimento) return "—";
-    if (atendimento.senha && typeof atendimento.senha === "object") {
-      var s = atendimento.senha;
-      if (s.numeroFormatado) {
-        var fmt = String(s.numeroFormatado).trim().toUpperCase();
-        var mFmt = fmt.match(/^([A-Z]+)\s*(\d+)$/);
-        if (mFmt) return formatarSenha(mFmt[1], mFmt[2]);
-        return fmt;
-      }
-      if (s.sigla || s.numero != null) {
-        return formatarSenha(s.sigla, s.numero);
-      }
-    }
-    if (typeof atendimento.senha === "string") {
-      var raw = atendimento.senha.trim().toUpperCase();
-      var m = raw.match(/^([A-Z]+)\s*(\d+)$/);
-      if (m) return formatarSenha(m[1], m[2]);
-      return raw;
-    }
-    if (atendimento.siglaSenha || atendimento.numeroSenha != null) {
-      return formatarSenha(atendimento.siglaSenha, atendimento.numeroSenha);
-    }
-    if (atendimento.numero) return String(atendimento.numero);
-    return "—";
   }
 
   function extrairServico(atendimento) {
@@ -152,7 +162,14 @@
   }
 
   function mostrarTicket(atendimento, tipoLabel) {
-    var numero = extrairSenha(atendimento);
+    var numero = normalizarTextoSenha(extrairSenha(atendimento));
+    // se API não trouxe sigla, força pela tipagem do botão
+    if (!/^[A-Z]+\d+$/.test(numero)) {
+      var fallbackLetter = /preferencial/i.test(tipoLabel) ? "P" : "A";
+      var onlyNum = String(numero).replace(/\D/g, "") || "0";
+      numero = senhaFinal(fallbackLetter, onlyNum);
+    }
+
     var servico = extrairServico(atendimento);
     var agora = new Date();
     var hora = agora.toLocaleString("pt-BR");
@@ -168,7 +185,7 @@
     if (cfg.autoPrint) {
       setTimeout(function () {
         try { window.print(); } catch (err) { console.warn(err); }
-      }, 250);
+      }, 300);
     }
 
     if (closeTimer) clearTimeout(closeTimer);
@@ -180,9 +197,10 @@
   function montarImpressao(numero, tipo, servico, hora) {
     var area = $("printArea");
     if (!area) return;
+    var titulo = cfg.unidadeNome || "2º Ofício de Notas e Registro de Imóveis";
     area.innerHTML =
       '<div class="print-ticket">' +
-      "<div><strong>" + (cfg.unidadeNome || "SGS") + "</strong></div>" +
+      "<div><strong>" + titulo + "</strong></div>" +
       "<div>" + tipo + "</div>" +
       '<div class="num">' + numero + "</div>" +
       (servico ? "<div>" + servico + "</div>" : "") +
@@ -197,23 +215,21 @@
     setStatus("");
   };
 
-  // Funções usadas pelos botões (corrige o erro emitirTabletNormal is not defined)
   window.emitirTabletNormal = function emitirTabletNormal() {
     return emitirSenha(
-      cfg.prioridadeNormalId || 1,
+      cfg.prioridadeNormalId || 3,
       "Normal",
-      cfg.servicoNormalId || cfg.servicoId || 1
+      cfg.servicoNormalId || cfg.servicoId || 6
     );
   };
 
   window.emitirTabletPreferencial = function emitirTabletPreferencial() {
     return emitirSenha(
-      cfg.prioridadePreferencialId || 2,
+      cfg.prioridadePreferencialId || 4,
       "Preferencial",
-      cfg.servicoPreferencialId || cfg.servicoId || 1
+      cfg.servicoPreferencialId || cfg.servicoId || 7
     );
   };
 
-  // aliases
   window.emitirTabletPrioritario = window.emitirTabletPreferencial;
 })();

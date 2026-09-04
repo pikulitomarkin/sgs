@@ -74,13 +74,22 @@
   }
 
   function formatSenha(item) {
-    var sigla = item.siglaSenha || item.sigla || "";
+    var sigla = item.siglaSenha || item.sigla || item.senhaSigla || "";
     var num = item.numeroSenha != null ? item.numeroSenha : item.numero;
+    if (num == null && item.senhaNumero != null) num = item.senhaNumero;
     if (num == null && item.senha) {
-      sigla = item.senha.sigla || sigla;
-      num = item.senha.numero;
+      if (typeof item.senha === "object") {
+        sigla = item.senha.sigla || sigla;
+        num = item.senha.numero;
+      } else {
+        var m = String(item.senha).toUpperCase().match(/^([A-Z]+)\s*0*(\d+)$/);
+        if (m) return String(m[1]) + pad(m[2]);
+      }
     }
-    return String(sigla || "") + pad(num, 3);
+    var out = String(sigla || "").toUpperCase() + pad(num);
+    var m2 = out.match(/^([A-Z]+)(\d+)$/);
+    if (m2) return m2[1] + pad(m2[2]);
+    return out;
   }
 
   function formatGuiche(item) {
@@ -167,41 +176,66 @@
   }
 
   var audioUnlocked = false;
+  var pendingSpeak = null;
+
+  // Chrome pausa speechSynthesis — manter vivo
+  setInterval(function () {
+    try {
+      if (window.speechSynthesis) window.speechSynthesis.resume();
+    } catch (e) {}
+  }, 4000);
 
   function unlockAudio() {
-    if (audioUnlocked) return;
     audioUnlocked = true;
     try {
       var a = $("alertSound");
       if (a) {
         a.muted = false;
+        a.volume = 1;
         a.play().then(function () {
           a.pause();
           a.currentTime = 0;
         }).catch(function () {});
       }
       if (window.speechSynthesis) {
-        var warm = new SpeechSynthesisUtterance(" ");
-        warm.volume = 0;
+        window.speechSynthesis.cancel();
+        var warm = new SpeechSynthesisUtterance("Voz do painel ativada");
+        warm.lang = "pt-BR";
+        warm.rate = 0.9;
+        warm.volume = 1;
         window.speechSynthesis.speak(warm);
       }
     } catch (e) {}
     var btn = $("audioUnlock");
     if (btn) btn.hidden = true;
+
+    if (pendingSpeak) {
+      var p = pendingSpeak;
+      pendingSpeak = null;
+      setTimeout(function () {
+        speakCall(p.senha, p.guiche, p.atendente);
+      }, 900);
+    }
   }
 
   function speakCall(senha, guiche, atendente) {
-    if (!cfg.speak || !window.speechSynthesis) return;
+    if (!cfg.speak) return;
+    if (!window.speechSynthesis) {
+      console.warn("speechSynthesis indisponível neste Chrome");
+      return;
+    }
     if (!audioUnlocked) {
+      pendingSpeak = { senha: senha, guiche: guiche, atendente: atendente };
       var btn = $("audioUnlock");
       if (btn) btn.hidden = false;
       return;
     }
     try {
       window.speechSynthesis.cancel();
+      window.speechSynthesis.resume();
 
       var texto =
-        "Senha " + speakSenhaText(senha) +
+        "Atenção. Senha " + speakSenhaText(senha) +
         ". Dirija-se ao " + speakGuicheText(guiche);
 
       if (cfg.speakAtendente && atendente && atendente !== "—") {
@@ -209,8 +243,17 @@
       }
 
       var repeats = Number(cfg.speakRepeats != null ? cfg.speakRepeats : 2);
-      var rate = Number(cfg.speakRate || 0.8);
+      var rate = Number(cfg.speakRate || 0.75);
       var i = 0;
+
+      function pickVoice() {
+        var voices = window.speechSynthesis.getVoices() || [];
+        return voices.find(function (v) {
+          return /pt-BR|pt_BR/i.test(v.lang);
+        }) || voices.find(function (v) {
+          return /pt|Portuguese|Brasil/i.test(v.lang + " " + v.name);
+        }) || null;
+      }
 
       function speakOnce() {
         if (i >= repeats) return;
@@ -220,18 +263,23 @@
         utter.rate = rate;
         utter.pitch = 1;
         utter.volume = 1;
-        var voices = window.speechSynthesis.getVoices() || [];
-        var pt = voices.find(function (v) {
-          return /pt-BR|pt_BR|Portuguese/i.test(v.lang + " " + v.name);
-        });
+        var pt = pickVoice();
         if (pt) utter.voice = pt;
         utter.onend = function () {
-          if (i < repeats) setTimeout(speakOnce, 450);
+          if (i < repeats) setTimeout(speakOnce, 500);
+        };
+        utter.onerror = function (ev) {
+          console.warn("TTS erro", ev);
         };
         window.speechSynthesis.speak(utter);
+        setTimeout(function () {
+          try { window.speechSynthesis.resume(); } catch (e) {}
+        }, 200);
       }
 
-      speakOnce();
+      // toca beep e depois fala
+      playSound();
+      setTimeout(speakOnce, 350);
     } catch (e) {
       console.warn(e);
     }
@@ -243,6 +291,7 @@
     if (!a) return;
     try {
       a.currentTime = 0;
+      a.volume = 1;
       a.play().catch(function () {});
     } catch (e) {}
   }
