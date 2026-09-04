@@ -17,5 +17,7 @@ window.SGS_TOTEM_CONFIG = {
 
   autoPrint: true,
   autoCloseMs: 8000,
+  // Exibir/imprimir como A001, P001 (3 dígitos)
+  senhaDigitos: 3,
   unidadeNome: "2º Ofício de Notas e Registro de Imóveis"
 };

@@ -250,3 +250,18 @@ html, body {
   .history { max-height: 24vh; }
   .brand { max-width: 62vw; }
 }
+
+.audio-unlock {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  border: 0;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-family: inherit;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.audio-unlock[hidden] { display: none !important; }

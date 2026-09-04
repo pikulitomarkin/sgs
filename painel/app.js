@@ -18,8 +18,9 @@
   }
 
   function pad(n, size) {
-    var s = String(n == null ? "" : n);
-    while (s.length < (size || 3)) s = "0" + s;
+    var s = String(n == null ? "" : n).replace(/\D/g, "");
+    var digits = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : 3);
+    while (s.length < (size || digits)) s = "0" + s;
     return s;
   }
 
@@ -130,39 +131,85 @@
     };
     return String(numStr).split("").map(function (c) {
       return map[c] || c;
-    }).join(" ");
+    }).join(", ");
+  }
+
+  function speakLetter(letter) {
+    var l = String(letter || "").toUpperCase();
+    var map = {
+      A: "Á",
+      P: "Pê",
+      B: "Bê",
+      C: "Cê",
+      D: "Dê",
+      E: "É",
+      F: "Éfe",
+      G: "Gê",
+      N: "Ene",
+      S: "Ésse"
+    };
+    return map[l] || l;
   }
 
   function speakSenhaText(senha) {
     var m = String(senha || "").match(/^([A-Za-zÀ-ÿ]+)\s*(\d+)$/);
     if (!m) return String(senha || "");
-    return m[1].toUpperCase() + " " + speakDigits(m[2]);
+    return speakLetter(m[1]) + ", " + speakDigits(m[2]);
   }
 
   function speakGuicheText(guiche) {
     var g = String(guiche || "");
-    var m = g.match(/(\d+)\s*$/);
+    var m = g.match(/^(.*?)(\d+)\s*$/);
     if (m) {
-      return g.replace(m[1], speakDigits(m[1]));
+      return (m[1] || "Guichê ").trim() + " " + speakDigits(m[2]);
     }
     return g;
   }
 
+  var audioUnlocked = false;
+
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    try {
+      var a = $("alertSound");
+      if (a) {
+        a.muted = false;
+        a.play().then(function () {
+          a.pause();
+          a.currentTime = 0;
+        }).catch(function () {});
+      }
+      if (window.speechSynthesis) {
+        var warm = new SpeechSynthesisUtterance(" ");
+        warm.volume = 0;
+        window.speechSynthesis.speak(warm);
+      }
+    } catch (e) {}
+    var btn = $("audioUnlock");
+    if (btn) btn.hidden = true;
+  }
+
   function speakCall(senha, guiche, atendente) {
     if (!cfg.speak || !window.speechSynthesis) return;
+    if (!audioUnlocked) {
+      var btn = $("audioUnlock");
+      if (btn) btn.hidden = false;
+      return;
+    }
     try {
       window.speechSynthesis.cancel();
 
       var texto =
         "Senha " + speakSenhaText(senha) +
-        ", " + speakGuicheText(guiche);
+        ". Dirija-se ao " + speakGuicheText(guiche);
 
       if (cfg.speakAtendente && atendente && atendente !== "—") {
         texto += ". Atendente " + atendente;
       }
 
       var repeats = Number(cfg.speakRepeats != null ? cfg.speakRepeats : 2);
-      var rate = Number(cfg.speakRate || 0.85);
+      var rate = Number(cfg.speakRate || 0.8);
       var i = 0;
 
       function speakOnce() {
@@ -173,8 +220,13 @@
         utter.rate = rate;
         utter.pitch = 1;
         utter.volume = 1;
+        var voices = window.speechSynthesis.getVoices() || [];
+        var pt = voices.find(function (v) {
+          return /pt-BR|pt_BR|Portuguese/i.test(v.lang + " " + v.name);
+        });
+        if (pt) utter.voice = pt;
         utter.onend = function () {
-          if (i < repeats) setTimeout(speakOnce, 400);
+          if (i < repeats) setTimeout(speakOnce, 450);
         };
         window.speechSynthesis.speak(utter);
       }
@@ -330,6 +382,22 @@
 
   function boot() {
     if (cfg.unidadeNome) $("unityName").textContent = cfg.unidadeNome;
+
+    var unlockBtn = $("audioUnlock");
+    if (cfg.speak && unlockBtn) {
+      unlockBtn.hidden = false;
+      unlockBtn.addEventListener("click", unlockAudio);
+      document.body.addEventListener("click", unlockAudio, { once: true });
+      document.body.addEventListener("touchstart", unlockAudio, { once: true });
+    }
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = function () {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     nowClock();
     setInterval(nowClock, 1000);
     refresh(false);

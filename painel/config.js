@@ -18,9 +18,10 @@ window.SGS_PAINEL_CONFIG = {
   showAtendente: true,
   speak: true,
   speakAtendente: false,
-  speakRate: 0.85,
+  speakRate: 0.8,
   speakRepeats: 2,
   sound: true,
+  senhaDigitos: 3,
 
   localPrefixFallback: "Guichê"
 };

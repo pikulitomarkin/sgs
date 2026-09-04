@@ -26,12 +26,14 @@ download "totem/index.html" "totem/index.html"
 download "totem/styles.css" "totem/styles.css"
 download "totem/app.js" "totem/app.js"
 download "totem/config.js" "totem/config.js"
+download "totem/nginx.conf" "totem/nginx.conf" || true
 
 download "painel/index.html" "painel/index.html"
 download "painel/styles.css" "painel/styles.css"
 download "painel/app.js" "painel/app.js"
 download "painel/config.js" "painel/config.js"
-download "painel/assets/logo-cartorio.png" "painel/assets/logo-cartorio.png"
+download "painel/assets/logo-cartorio.png" "painel/assets/logo-cartorio.png" || true
+download "painel/nginx.conf" "painel/nginx.conf" || true
 
 echo "==> Conferindo totem (não deve ter logo/header)..."
 if grep -q "top-brand\|logo-cartorio" totem/index.html; then

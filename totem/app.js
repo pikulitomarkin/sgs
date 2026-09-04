@@ -100,16 +100,45 @@
     }
   }
 
+  function pad(n, size) {
+    var s = String(n == null ? "" : n).replace(/\D/g, "");
+    var digits = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : 3);
+    while (s.length < (size || digits)) s = "0" + s;
+    return s;
+  }
+
+  /** Formato alinhado ao painel TV: A001, P001 */
+  function formatarSenha(sigla, numero) {
+    var letter = String(sigla || "").trim().toUpperCase();
+    var digits = Number(cfg.senhaDigitos != null ? cfg.senhaDigitos : 3);
+    if (!letter && numero != null) return pad(numero, digits);
+    if (numero == null || numero === "") return letter || "—";
+    return letter + pad(numero, digits);
+  }
+
   function extrairSenha(atendimento) {
     if (!atendimento) return "—";
     if (atendimento.senha && typeof atendimento.senha === "object") {
       var s = atendimento.senha;
-      if (s.sigla || s.numero != null) {
-        return String(s.sigla || "") + String(s.numero != null ? s.numero : "");
+      if (s.numeroFormatado) {
+        var fmt = String(s.numeroFormatado).trim().toUpperCase();
+        var mFmt = fmt.match(/^([A-Z]+)\s*(\d+)$/);
+        if (mFmt) return formatarSenha(mFmt[1], mFmt[2]);
+        return fmt;
       }
-      if (s.numeroFormatado) return s.numeroFormatado;
+      if (s.sigla || s.numero != null) {
+        return formatarSenha(s.sigla, s.numero);
+      }
     }
-    if (typeof atendimento.senha === "string") return atendimento.senha;
+    if (typeof atendimento.senha === "string") {
+      var raw = atendimento.senha.trim().toUpperCase();
+      var m = raw.match(/^([A-Z]+)\s*(\d+)$/);
+      if (m) return formatarSenha(m[1], m[2]);
+      return raw;
+    }
+    if (atendimento.siglaSenha || atendimento.numeroSenha != null) {
+      return formatarSenha(atendimento.siglaSenha, atendimento.numeroSenha);
+    }
     if (atendimento.numero) return String(atendimento.numero);
     return "—";
   }
