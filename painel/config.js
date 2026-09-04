@@ -8,7 +8,7 @@ window.SGS_PAINEL_CONFIG = {
   password: "00351master",
 
   unidadeId: 2,
-  unidadeNome: "2º Ofício de Notas e Registro de Imóveis — Tabuleiro do Norte/CE",
+  unidadeNome: "Tabuleiro do Norte — CE",
   servicos: "6,7",
 
   pollIntervalMs: 2000,

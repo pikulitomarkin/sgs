@@ -7,14 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <div class="layout">
     <header class="top">
       <div class="brand-wrap">
-        <img class="logo" src="assets/logo-cartorio.png" alt="2º Ofício de Notas e Registro de Imóveis" />
-        <div>
+        <img class="logo" src="assets/logo-cartorio.png?v=3" alt="2º Ofício de Notas e Registro de Imóveis" />
+        <div class="brand-text">
           <p class="brand">2º Ofício de Notas e Registro de Imóveis</p>
           <p class="unity" id="unityName">Tabuleiro do Norte — CE</p>
         </div>
@@ -28,23 +28,17 @@
       <p class="prioridade" id="senhaPrioridade"></p>
 
       <div class="guiche-block">
-        <span class="meta-label">Guichê</span>
+        <span class="meta-label">Dirija-se ao</span>
         <span class="guiche-value" id="guiche">—</span>
       </div>
 
-      <div class="meta secondary">
-        <div class="meta-card">
-          <span class="meta-label">Atendente</span>
-          <span class="meta-value" id="atendente">—</span>
-        </div>
-      </div>
-
+      <p class="atendente-line">Atendente: <span id="atendente">—</span></p>
       <p class="servico" id="servico"></p>
       <p class="hint" id="hint">Aguardando chamada…</p>
     </section>
 
     <aside class="history">
-      <h2>Últimas</h2>
+      <h2>Últimas chamadas</h2>
       <ul id="historyList"></ul>
     </aside>
   </div>
@@ -53,7 +47,7 @@
     <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Onp6Xh4B7e4GMk5iZk46GfXt7gImSmJmVjYd/e3uBiZKYmZWNh397e4GJkpiZlY2Hf3t7gYmSmJmVjYd/e3uBiZKYmZWNh397e4GJkpiZlY2Hf3t7gYmSmJmVjYd/" type="audio/wav" />
   </audio>
 
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
