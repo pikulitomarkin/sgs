@@ -22,5 +22,7 @@ window.SGS_TOTEM_CONFIG = {
   // Papel térmico Bematech (80mm) — margem ~3mm cada lado
   papelMm: 80,
   margemMm: 3,
-  unidadeNome: "2º Ofício de Notas e Registro de Imóveis"
+  logoUrl: "assets/logo-cartorio.png",
+  unidadeNome: "2º Ofício de Notas e Registro de Imóveis",
+  unidadeNomeCurto: "2º Ofício — Tabuleiro do Norte/CE"
 };

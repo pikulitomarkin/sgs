@@ -197,11 +197,15 @@
   function montarImpressao(numero, tipo, servico, hora) {
     var area = $("printArea");
     if (!area) return;
-    var titulo = cfg.unidadeNome || "2º Ofício de Notas e Registro de Imóveis";
+    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício de Notas e Registro de Imóveis";
     var tipoTxt = String(tipo || "").toUpperCase();
+    var logoSrc = cfg.logoUrl || "assets/logo-cartorio.png";
     area.innerHTML =
       '<div class="print-ticket">' +
+      '<div class="print-head">' +
+      '<img class="print-logo" src="' + logoSrc + '" alt="" />' +
       '<p class="print-brand">' + titulo + "</p>" +
+      "</div>" +
       '<p class="print-type">' + tipoTxt + "</p>" +
       '<p class="print-num">' + numero + "</p>" +
       (servico ? '<p class="print-svc">' + servico + "</p>" : "") +

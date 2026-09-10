@@ -208,47 +208,75 @@ html, body {
     color: #000 !important;
   }
 
+  /* Logo discreta no canto + nome ao lado */
+  .print-head {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 2mm !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin: 0 0 3mm !important;
+    padding-bottom: 2mm !important;
+    border-bottom: 0.4mm solid #000 !important;
+  }
+
+  .print-logo {
+    width: 10mm !important;
+    height: 10mm !important;
+    max-width: 10mm !important;
+    max-height: 10mm !important;
+    object-fit: contain !important;
+    display: block !important;
+    flex: 0 0 auto !important;
+    background: transparent !important;
+  }
+
   .print-brand {
-    font-size: 11pt !important;
-    font-weight: 800 !important;
-    line-height: 1.2 !important;
-    margin: 0 0 2mm !important;
+    flex: 1 1 auto !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    margin: 0 !important;
+    text-align: left !important;
     word-wrap: break-word !important;
   }
 
   .print-type {
-    font-size: 14pt !important;
+    font-size: 12pt !important;
     font-weight: 800 !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.1em !important;
     text-transform: uppercase !important;
-    margin: 1mm 0 !important;
+    margin: 2mm 0 1mm !important;
   }
 
+  /* Senha bem grande e central */
   .print-num {
-    font-size: 52pt !important;
+    font-size: 68pt !important;
     font-weight: 900 !important;
-    line-height: 1 !important;
-    letter-spacing: 0.04em !important;
-    margin: 3mm 0 2mm !important;
+    line-height: 0.95 !important;
+    letter-spacing: 0.02em !important;
+    margin: 2mm 0 3mm !important;
+    text-align: center !important;
   }
 
   .print-svc,
   .print-time {
-    font-size: 11pt !important;
+    font-size: 10pt !important;
     font-weight: 600 !important;
     margin: 1mm 0 !important;
   }
 
   .print-msg {
-    font-size: 12pt !important;
+    font-size: 11pt !important;
     font-weight: 800 !important;
     margin: 3mm 0 0 !important;
   }
 
-  /* compat com classe antiga */
   .print-ticket .num {
-    font-size: 52pt !important;
+    font-size: 68pt !important;
     font-weight: 900 !important;
-    margin: 3mm 0 !important;
+    margin: 2mm 0 3mm !important;
   }
 }
