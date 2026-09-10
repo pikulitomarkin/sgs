@@ -198,14 +198,15 @@
     var area = $("printArea");
     if (!area) return;
     var titulo = cfg.unidadeNome || "2º Ofício de Notas e Registro de Imóveis";
+    var tipoTxt = String(tipo || "").toUpperCase();
     area.innerHTML =
       '<div class="print-ticket">' +
-      "<div><strong>" + titulo + "</strong></div>" +
-      "<div>" + tipo + "</div>" +
-      '<div class="num">' + numero + "</div>" +
-      (servico ? "<div>" + servico + "</div>" : "") +
-      "<div>" + hora + "</div>" +
-      "<div>Aguarde ser chamado</div>" +
+      '<p class="print-brand">' + titulo + "</p>" +
+      '<p class="print-type">' + tipoTxt + "</p>" +
+      '<p class="print-num">' + numero + "</p>" +
+      (servico ? '<p class="print-svc">' + servico + "</p>" : "") +
+      '<p class="print-time">' + hora + "</p>" +
+      '<p class="print-msg">Aguarde ser chamado</p>' +
       "</div>";
   }
 

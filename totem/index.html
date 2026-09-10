@@ -128,8 +128,43 @@
         grid-template-rows: 1fr 1fr;
       }
     }
+    @page {
+      size: 80mm auto;
+      margin: 3mm;
+    }
+    @media print {
+      html, body {
+        width: 80mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        overflow: visible !important;
+        position: static !important;
+      }
+      body * { visibility: hidden !important; }
+      #printArea, #printArea * { visibility: visible !important; }
+      .split, .ticket-overlay, .status { display: none !important; }
+      #printArea {
+        display: block !important;
+        position: static !important;
+        width: 74mm !important;
+        max-width: 74mm !important;
+        margin: 0 auto !important;
+        padding: 2mm 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+      }
+      .print-ticket { width: 100% !important; text-align: center !important; color: #000 !important; }
+      .print-brand { font-size: 11pt !important; font-weight: 800 !important; line-height: 1.2 !important; margin: 0 0 2mm !important; }
+      .print-type { font-size: 14pt !important; font-weight: 800 !important; letter-spacing: 0.08em !important; margin: 1mm 0 !important; }
+      .print-num, .print-ticket .num { font-size: 52pt !important; font-weight: 900 !important; line-height: 1 !important; margin: 3mm 0 2mm !important; }
+      .print-svc, .print-time { font-size: 11pt !important; font-weight: 600 !important; margin: 1mm 0 !important; }
+      .print-msg { font-size: 12pt !important; font-weight: 800 !important; margin: 3mm 0 0 !important; }
+    }
   </style>
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 <body>
   <main class="split" id="home">
@@ -159,7 +194,7 @@
 
   <div id="printArea" class="print-only" aria-hidden="true"></div>
 
-  <script src="config.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="config.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
