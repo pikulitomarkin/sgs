@@ -184,13 +184,146 @@
 
     if (cfg.autoPrint) {
       setTimeout(function () {
-        try { window.print(); } catch (err) { console.warn(err); }
-      }, 300);
+        imprimirSenha(numero, tipoLabel, servico, hora);
+      }, 250);
     }
 
     if (closeTimer) clearTimeout(closeTimer);
     if (cfg.autoCloseMs > 0) {
       closeTimer = setTimeout(fecharTicket, cfg.autoCloseMs);
+    }
+  }
+
+  function montarTextoCupom(numero, tipo, servico, hora) {
+    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício";
+    var tipoTxt = String(tipo || "").toUpperCase();
+    var linhas = [
+      titulo,
+      "--------------------------------",
+      tipoTxt,
+      "",
+      numero,
+      "",
+      servico ? String(servico) : "",
+      String(hora || ""),
+      "Aguarde ser chamado",
+      "",
+      "",
+      ""
+    ];
+    return linhas.filter(function (l, i, arr) {
+      // mantém linha em branco intencional após a senha
+      return true;
+    }).join("\n");
+  }
+
+  /** ESC/POS: senha grande e centralizada (Bematech / térmicas) */
+  function montarEscPosCupom(numero, tipo, servico, hora) {
+    var ESC = "\x1B";
+    var GS = "\x1D";
+    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício";
+    var tipoTxt = String(tipo || "").toUpperCase();
+    var out = "";
+    out += ESC + "@";           // init
+    out += ESC + "a\x00";       // left
+    out += titulo + "\n";
+    out += "--------------------------------\n";
+    out += ESC + "a\x01";       // center
+    out += ESC + "E\x01";       // bold on
+    out += tipoTxt + "\n";
+    out += ESC + "E\x00";
+    out += GS + "!\x33";        // bem grande (largura/altura)
+    out += String(numero) + "\n";
+    out += GS + "!\x00";        // tamanho normal
+    if (servico) out += String(servico) + "\n";
+    out += String(hora || "") + "\n";
+    out += ESC + "E\x01";
+    out += "Aguarde ser chamado\n";
+    out += ESC + "E\x00";
+    out += "\n\n\n";
+    out += ESC + "i";           // cut parcial (se suportado)
+    return out;
+  }
+
+  function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function binaryToBase64(binStr) {
+    // ESC/POS: bytes 0-255; títulos UTF-8 podem quebrar — usamos latin1 seguro
+    var s = String(binStr);
+    var out = "";
+    for (var i = 0; i < s.length; i++) {
+      out += String.fromCharCode(s.charCodeAt(i) & 0xff);
+    }
+    return btoa(out);
+  }
+
+  function printRawBT(payload, useBase64) {
+    try {
+      var url;
+      if (useBase64) {
+        url = "rawbt:base64," + payload;
+      } else {
+        url =
+          "intent:" +
+          encodeURI(payload) +
+          "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+      }
+
+      // iframe evita “piscar” a página; fallback para location
+      var iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;width:0;height:0;border:0;opacity:0;";
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      setTimeout(function () {
+        try { document.body.removeChild(iframe); } catch (e) {}
+      }, 4000);
+
+      // reforço via location (alguns Chrome só aceitam assim)
+      setTimeout(function () {
+        try {
+          var a = document.createElement("a");
+          a.href = url;
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            try { document.body.removeChild(a); } catch (e2) {}
+          }, 1000);
+        } catch (e) {
+          window.location.href = url;
+        }
+      }, 120);
+
+      return true;
+    } catch (e) {
+      console.warn("RawBT falhou", e);
+      return false;
+    }
+  }
+
+  function imprimirSenha(numero, tipo, servico, hora) {
+    var mode = String(cfg.printMode || "rawbt").toLowerCase();
+
+    if (mode === "browser") {
+      try { window.print(); } catch (err) { console.warn(err); }
+      return;
+    }
+
+    // Padrão: RawBT direto (sem diálogo do Chrome)
+    // 1) tenta ESC/POS base64 (senha grande)
+    var esc = montarEscPosCupom(numero, tipo, servico, hora);
+    var ok = printRawBT(binaryToBase64(esc), true);
+
+    if (!ok) {
+      // 2) texto UTF-8 via intent
+      var txt = montarTextoCupom(numero, tipo, servico, hora);
+      ok = printRawBT(txt, false);
+    }
+
+    if (!ok && cfg.printFallbackBrowser !== false) {
+      try { window.print(); } catch (err) { console.warn(err); }
     }
   }
 

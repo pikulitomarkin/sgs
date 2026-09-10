@@ -16,6 +16,9 @@ window.SGS_TOTEM_CONFIG = {
   prioridadePreferencialId: 4,
 
   autoPrint: true,
+  // rawbt = impressão direta no tablet (sem tela do Chrome)
+  // browser = abre o diálogo de impressão
+  printMode: "rawbt",
   autoCloseMs: 8000,
   // Exibir/imprimir como A001, P001 (3 dígitos)
   senhaDigitos: 3,
