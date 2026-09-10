@@ -20,11 +20,10 @@ window.SGS_PAINEL_CONFIG = {
   speakAtendente: false,
   speakRate: 0.78,
   speakRepeats: 2,
-  // Na Smart TV o speechSynthesis costuma falhar — google = áudio HTML5
-  speakEngine: "google",
+  // proxy = voz pelo servidor (/tts) — necessário na Smart TV
+  speakEngine: "proxy",
   sound: true,
   soundVolume: 1,
-  // Tenta automático; na TV real quase sempre precisa de 1 OK no controle
   autoUnlock: true,
   senhaDigitos: 3,
 

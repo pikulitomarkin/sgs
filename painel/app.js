@@ -291,73 +291,143 @@
         setTimeout(function () {
           try { window.speechSynthesis.resume(); } catch (e) {}
         }, 150);
+        // na TV, se não confirmar em 4s, considera falha e tenta outro motor
         setTimeout(function () {
-          if (!done) finish(window.speechSynthesis.speaking || window.speechSynthesis.pending);
-        }, 1500);
+          if (!done) finish(window.speechSynthesis.speaking);
+        }, 4000);
       } catch (e) {
         resolve(false);
       }
     });
   }
 
-  function speakGoogleAudio(texto) {
+  function playTtsUrl(url) {
     return new Promise(function (resolve) {
       try {
         if (ttsAudio) {
           try { ttsAudio.pause(); } catch (e) {}
         }
-        var parts = [];
-        var rest = String(texto);
-        while (rest.length > 0) {
-          if (rest.length <= 160) {
-            parts.push(rest);
-            break;
-          }
-          var cut = rest.lastIndexOf(" ", 150);
-          if (cut < 40) cut = 150;
-          parts.push(rest.slice(0, cut));
-          rest = rest.slice(cut).trim();
+        ttsAudio = new Audio(url);
+        ttsAudio.preload = "auto";
+        ttsAudio.volume = Number(cfg.soundVolume != null ? cfg.soundVolume : 1);
+        var settled = false;
+        function finish(ok) {
+          if (settled) return;
+          settled = true;
+          resolve(!!ok);
         }
-
-        var i = 0;
-        function next() {
-          if (i >= parts.length) return resolve(true);
-          var q = encodeURIComponent(parts[i++]);
-          var url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pt-BR&q=" + q;
-          ttsAudio = new Audio(url);
-          ttsAudio.volume = Number(cfg.soundVolume != null ? cfg.soundVolume : 1);
-          ttsAudio.onended = function () { setTimeout(next, 180); };
-          ttsAudio.onerror = function () { resolve(i > 1); };
-          ttsAudio.play().then(function () {}).catch(function () { resolve(false); });
-        }
-        next();
+        ttsAudio.onended = function () { finish(true); };
+        ttsAudio.onerror = function () { finish(false); };
+        ttsAudio.play().then(function () {}).catch(function () { finish(false); });
+        setTimeout(function () {
+          if (!settled && ttsAudio && !ttsAudio.paused) return;
+          if (!settled) finish(false);
+        }, 15000);
       } catch (e) {
         resolve(false);
       }
     });
   }
 
+  function splitTtsParts(texto) {
+    var parts = [];
+    var rest = String(texto || "").trim();
+    while (rest.length > 0) {
+      if (rest.length <= 120) {
+        parts.push(rest);
+        break;
+      }
+      var cut = rest.lastIndexOf(" ", 110);
+      if (cut < 30) cut = 110;
+      parts.push(rest.slice(0, cut));
+      rest = rest.slice(cut).trim();
+    }
+    return parts;
+  }
+
+  /** Voz via proxy do próprio painel (/tts) — funciona na Smart TV */
+  function speakProxyAudio(texto) {
+    return new Promise(function (resolve) {
+      var parts = splitTtsParts(texto);
+      if (!parts.length) return resolve(false);
+      var i = 0;
+      var anyOk = false;
+
+      function next() {
+        if (i >= parts.length) return resolve(anyOk);
+        var q = encodeURIComponent(parts[i++]);
+        var url = "/tts?q=" + q + "&v=1";
+        playTtsUrl(url).then(function (ok) {
+          if (ok) {
+            anyOk = true;
+            setTimeout(next, 200);
+          } else {
+            // se o 1º pedaço falhar, aborta
+            resolve(anyOk);
+          }
+        });
+      }
+      next();
+    });
+  }
+
+  /** Fallback: Google TTS direto (PC/navegador comum) */
+  function speakGoogleAudio(texto) {
+    return new Promise(function (resolve) {
+      var parts = splitTtsParts(texto);
+      if (!parts.length) return resolve(false);
+      var i = 0;
+      var anyOk = false;
+      function next() {
+        if (i >= parts.length) return resolve(anyOk);
+        var q = encodeURIComponent(parts[i++]);
+        var url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=pt-BR&q=" + q;
+        playTtsUrl(url).then(function (ok) {
+          if (ok) {
+            anyOk = true;
+            setTimeout(next, 200);
+          } else {
+            resolve(anyOk);
+          }
+        });
+      }
+      next();
+    });
+  }
+
   function speakTextOnce(texto) {
-    var engine = String(cfg.speakEngine || "google").toLowerCase();
-    if (engine === "browser") return speakBrowser(texto);
-    if (engine === "auto") {
-      return speakBrowser(texto).then(function (ok) {
+    var engine = String(cfg.speakEngine || "auto").toLowerCase();
+
+    function chain() {
+      // 1) proxy local (melhor na TV)  2) browser  3) google direto
+      return speakProxyAudio(texto).then(function (ok) {
+        if (ok) return true;
+        return speakBrowser(texto);
+      }).then(function (ok) {
         if (ok) return true;
         return speakGoogleAudio(texto);
       });
     }
-    // google (padrão na TV): só áudio HTML5
-    return speakGoogleAudio(texto).then(function (ok) {
+
+    if (engine === "browser") return speakBrowser(texto);
+    if (engine === "google") {
+      return speakGoogleAudio(texto).then(function (ok) {
+        if (ok) return true;
+        return speakProxyAudio(texto);
+      });
+    }
+    if (engine === "proxy") return speakProxyAudio(texto).then(function (ok) {
       if (ok) return true;
       return speakBrowser(texto);
     });
+    return chain();
   }
 
   function speakCall(senha, guiche, atendente) {
     if (!cfg.speak && !cfg.sound) return;
     if (!audioUnlocked) {
       pendingSpeak = { senha: senha, guiche: guiche, atendente: atendente };
-      setUnlockUi(false, "Toque para ativar o som da TV");
+      setUnlockUi(false, "Pressione OK no controle para ativar o som");
       if (cfg.autoUnlock !== false) tryAutoUnlock();
       return;
     }
@@ -366,17 +436,29 @@
     var repeats = Number(cfg.speakRepeats != null ? cfg.speakRepeats : 2);
     var i = 0;
 
-    function round() {
-      if (i >= repeats) return;
-      i += 1;
-      playSound().then(function () {
-        if (!cfg.speak) return null;
-        return speakTextOnce(texto);
-      }).then(function () {
-        if (i < repeats) setTimeout(round, 650);
-      });
-    }
-    round();
+    // 1 bip só no início (não 2 bips sem voz)
+    playSound().then(function () {
+      function round() {
+        if (i >= repeats) return;
+        i += 1;
+        if (!cfg.speak) return;
+        speakTextOnce(texto).then(function (ok) {
+          if (!ok && i === 1) {
+            setUnlockUi(false, "Voz falhou — pressione OK e confira internet do servidor");
+            var btn = $("audioUnlock");
+            if (btn) {
+              btn.hidden = false;
+              btn.innerHTML =
+                '<span class="audio-unlock-title">Ativar voz de novo</span>' +
+                '<span class="audio-unlock-sub">Pressione OK no controle</span>';
+            }
+            return;
+          }
+          if (i < repeats) setTimeout(round, 700);
+        });
+      }
+      round();
+    });
   }
 
   function unlockAudio() {
@@ -558,12 +640,10 @@
   function boot() {
     if (cfg.unidadeNome) $("unityName").textContent = cfg.unidadeNome;
 
-    // Smart TV: voz do navegador quase nunca funciona — força áudio HTML5
+    // Smart TV: usa proxy /tts do servidor (não chama Google direto)
     var ua = navigator.userAgent || "";
     if (/SmartTV|Smart-TV|Web0S|WebOS|Tizen|BRAVIA|VIDAA|Vizio|AppleTV|CrKey|AFT|TV /i.test(ua)) {
-      if (!cfg.speakEngine || cfg.speakEngine === "auto") {
-        cfg.speakEngine = "google";
-      }
+      cfg.speakEngine = "proxy";
     }
 
     var unlockBtn = $("audioUnlock");
