@@ -7,13 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <div class="layout">
     <header class="top">
       <div class="brand-wrap">
-        <img class="logo" src="assets/logo-cartorio.png?v=8" alt="2º Ofício de Notas e Registro de Imóveis" />
+        <img class="logo" src="assets/logo-cartorio.png?v=10" alt="2º Ofício de Notas e Registro de Imóveis" />
         <div class="brand-text">
           <p class="brand">2º Ofício de Notas e Registro de Imóveis</p>
           <p class="unity" id="unityName">Tabuleiro do Norte — CE</p>
@@ -43,15 +43,16 @@
     </aside>
   </div>
 
-  <audio id="alertSound" preload="auto">
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2Onp6Xh4B7e4GMk5iZk46GfXt7gImSmJmVjYd/e3uBiZKYmZWNh397e4GJkpiZlY2Hf3t7gYmSmJmVjYd/e3uBiZKYmZWNh397e4GJkpiZlY2Hf3t7gYmSmJmVjYd/" type="audio/wav" />
+  <audio id="alertSound" preload="auto" playsinline>
+    <source src="assets/beep.wav?v=10" type="audio/wav" />
   </audio>
 
   <button type="button" class="audio-unlock" id="audioUnlock">
-    Toque para ativar a voz do painel
+    Toque para ativar o som da TV
   </button>
+  <p class="audio-status" id="audioStatus" hidden>Áudio ativo</p>
 
-  <script src="config.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="config.js?v=10"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

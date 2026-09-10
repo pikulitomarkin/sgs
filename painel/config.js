@@ -18,9 +18,14 @@ window.SGS_PAINEL_CONFIG = {
   showAtendente: true,
   speak: true,
   speakAtendente: false,
-  speakRate: 0.8,
+  speakRate: 0.78,
   speakRepeats: 2,
+  // auto = browser TTS, se falhar usa Google TTS (áudio)
+  speakEngine: "auto",
   sound: true,
+  soundVolume: 1,
+  // tenta liberar áudio sozinho (melhor com Chrome --autoplay-policy=no-user-gesture-required)
+  autoUnlock: true,
   senhaDigitos: 3,
 
   localPrefixFallback: "Guichê"
