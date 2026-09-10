@@ -338,12 +338,18 @@
   }
 
   function speakTextOnce(texto) {
-    var engine = String(cfg.speakEngine || "auto").toLowerCase();
-    if (engine === "google") return speakGoogleAudio(texto);
+    var engine = String(cfg.speakEngine || "google").toLowerCase();
     if (engine === "browser") return speakBrowser(texto);
-    return speakBrowser(texto).then(function (ok) {
+    if (engine === "auto") {
+      return speakBrowser(texto).then(function (ok) {
+        if (ok) return true;
+        return speakGoogleAudio(texto);
+      });
+    }
+    // google (padrão na TV): só áudio HTML5
+    return speakGoogleAudio(texto).then(function (ok) {
       if (ok) return true;
-      return speakGoogleAudio(texto);
+      return speakBrowser(texto);
     });
   }
 
@@ -379,17 +385,14 @@
     if (btn) btn.textContent = "Ativando áudio…";
 
     playSound().then(function (okSound) {
-      if (!okSound && !window.speechSynthesis) {
-        setUnlockUi(false, "Sem áudio neste navegador — toque de novo");
-        return null;
-      }
       audioUnlocked = true;
       try { localStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
       if (!cfg.speak) {
         setUnlockUi(true, "Som ativo");
         return null;
       }
-      return speakTextOnce("Som do painel ativado");
+      // Na TV: fala confirmação via áudio HTML5 (Google TTS)
+      return speakTextOnce("Som do painel ativado. Pronto para chamar senhas.");
     }).then(function () {
       if (!audioUnlocked) return;
       setUnlockUi(true, "Áudio ativo — pronto para chamar");
@@ -401,8 +404,10 @@
         }, 800);
       }
     }).catch(function () {
-      audioUnlocked = false;
-      setUnlockUi(false, "Falha no áudio — toque novamente");
+      // mesmo se a voz falhar, mantém beep liberado se já tocou
+      audioUnlocked = true;
+      try { localStorage.setItem(STORAGE_KEY, "1"); } catch (e) {}
+      setUnlockUi(true, "Som liberado (voz pode depender da internet)");
     });
   }
 
@@ -553,16 +558,38 @@
   function boot() {
     if (cfg.unidadeNome) $("unityName").textContent = cfg.unidadeNome;
 
+    // Smart TV: voz do navegador quase nunca funciona — força áudio HTML5
+    var ua = navigator.userAgent || "";
+    if (/SmartTV|Smart-TV|Web0S|WebOS|Tizen|BRAVIA|VIDAA|Vizio|AppleTV|CrKey|AFT|TV /i.test(ua)) {
+      if (!cfg.speakEngine || cfg.speakEngine === "auto") {
+        cfg.speakEngine = "google";
+      }
+    }
+
     var unlockBtn = $("audioUnlock");
     if ((cfg.speak || cfg.sound) && unlockBtn) {
       unlockBtn.hidden = false;
-      unlockBtn.addEventListener("click", function (ev) {
-        ev.preventDefault();
+      unlockBtn.focus();
+
+      function onActivate(ev) {
+        if (ev) ev.preventDefault();
         unlockAudio();
-      });
-      unlockBtn.addEventListener("touchend", function (ev) {
-        ev.preventDefault();
-        unlockAudio();
+      }
+
+      unlockBtn.addEventListener("click", onActivate);
+      unlockBtn.addEventListener("touchend", onActivate);
+      // Controles de TV (OK / Enter / Space / setas + OK)
+      document.addEventListener("keydown", function (ev) {
+        if (audioUnlocked) return;
+        var k = ev.key || "";
+        var code = ev.keyCode || 0;
+        if (
+          k === "Enter" || k === " " || k === "Spacebar" ||
+          k === "OK" || k === "Select" ||
+          code === 13 || code === 32 || code === 23 || code === 10
+        ) {
+          onActivate(ev);
+        }
       });
     }
 
@@ -573,8 +600,8 @@
       };
     }
 
-    // tenta áudio automático (Chrome kiosk / após 1º unlock)
-    setTimeout(tryAutoUnlock, 400);
+    // tenta automático (raro em TV; se falhar, tela de OK permanece)
+    setTimeout(tryAutoUnlock, 500);
 
     nowClock();
     setInterval(nowClock, 1000);

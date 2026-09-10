@@ -20,11 +20,11 @@ window.SGS_PAINEL_CONFIG = {
   speakAtendente: false,
   speakRate: 0.78,
   speakRepeats: 2,
-  // auto = browser TTS, se falhar usa Google TTS (áudio)
-  speakEngine: "auto",
+  // Na Smart TV o speechSynthesis costuma falhar — google = áudio HTML5
+  speakEngine: "google",
   sound: true,
   soundVolume: 1,
-  // tenta liberar áudio sozinho (melhor com Chrome --autoplay-policy=no-user-gesture-required)
+  // Tenta automático; na TV real quase sempre precisa de 1 OK no controle
   autoUnlock: true,
   senhaDigitos: 3,
 
