@@ -26,6 +26,8 @@ window.SGS_TOTEM_CONFIG = {
   papelMm: 80,
   margemMm: 3,
   logoUrl: "assets/logo-cartorio.png",
+  // RawBT: não manda imagem (evita logo enorme). Desative também o logo no app RawBT.
+  printShowLogo: false,
   unidadeNome: "2º Ofício de Notas e Registro de Imóveis",
-  unidadeNomeCurto: "2º Ofício — Tabuleiro do Norte/CE"
+  unidadeNomeCurto: "2o Oficio - Tabuleiro do Norte/CE"
 };

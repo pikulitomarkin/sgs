@@ -194,54 +194,66 @@
     }
   }
 
+  function asciiSafe(str) {
+    return String(str || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\x20-\x7E\n]/g, "")
+      .trim();
+  }
+
   function montarTextoCupom(numero, tipo, servico, hora) {
-    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício";
-    var tipoTxt = String(tipo || "").toUpperCase();
-    var linhas = [
+    var titulo = asciiSafe(cfg.unidadeNomeCurto || "2o Oficio - Tabuleiro do Norte/CE");
+    var tipoTxt = asciiSafe(String(tipo || "").toUpperCase());
+    var horaTxt = asciiSafe(hora);
+    return [
       titulo,
-      "--------------------------------",
+      "----------------",
       tipoTxt,
       "",
-      numero,
+      String(numero),
       "",
-      servico ? String(servico) : "",
-      String(hora || ""),
+      horaTxt,
       "Aguarde ser chamado",
       "",
       "",
+      "",
+      "",
       ""
-    ];
-    return linhas.filter(function (l, i, arr) {
-      // mantém linha em branco intencional após a senha
-      return true;
-    }).join("\n");
+    ].join("\n");
   }
 
-  /** ESC/POS: senha grande e centralizada (Bematech / térmicas) */
+  /** ESC/POS compacto: cabeçalho curto, senha enorme no centro, avanço antes do corte */
   function montarEscPosCupom(numero, tipo, servico, hora) {
     var ESC = "\x1B";
     var GS = "\x1D";
-    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício";
-    var tipoTxt = String(tipo || "").toUpperCase();
+    var titulo = asciiSafe(cfg.unidadeNomeCurto || "2o Oficio - Tabuleiro do Norte/CE");
+    var tipoTxt = asciiSafe(String(tipo || "").toUpperCase());
+    var horaTxt = asciiSafe(hora);
     var out = "";
-    out += ESC + "@";           // init
-    out += ESC + "a\x00";       // left
+
+    out += ESC + "@";             // init
+    out += ESC + "a\x00";         // left
+    out += ESC + "!\x00";         // fonte normal
     out += titulo + "\n";
-    out += "--------------------------------\n";
-    out += ESC + "a\x01";       // center
-    out += ESC + "E\x01";       // bold on
+    out += "----------------\n";
+
+    out += ESC + "a\x01";         // centro
     out += tipoTxt + "\n";
-    out += ESC + "E\x00";
-    out += GS + "!\x33";        // bem grande (largura/altura)
+    out += "\n";
+
+    // senha bem grande (4x largura / 4x altura)
+    out += GS + "!\x33";
     out += String(numero) + "\n";
-    out += GS + "!\x00";        // tamanho normal
-    if (servico) out += String(servico) + "\n";
-    out += String(hora || "") + "\n";
-    out += ESC + "E\x01";
+    out += GS + "!\x00";
+    out += "\n";
+
+    out += horaTxt + "\n";
     out += "Aguarde ser chamado\n";
-    out += ESC + "E\x00";
-    out += "\n\n\n";
-    out += ESC + "i";           // cut parcial (se suportado)
+
+    // Avança o papel para NÃO cortar horário/mensagem (corta depois)
+    out += "\n\n\n\n\n\n\n\n";
+    out += GS + "V\x01";          // corte parcial
     return out;
   }
 
@@ -271,31 +283,15 @@
           "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
       }
 
-      // iframe evita “piscar” a página; fallback para location
-      var iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;width:0;height:0;border:0;opacity:0;";
-      iframe.src = url;
-      document.body.appendChild(iframe);
+      // Uma única chamada (evita imprimir 2x / cabeçalho duplicado do RawBT)
+      var a = document.createElement("a");
+      a.href = url;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
       setTimeout(function () {
-        try { document.body.removeChild(iframe); } catch (e) {}
-      }, 4000);
-
-      // reforço via location (alguns Chrome só aceitam assim)
-      setTimeout(function () {
-        try {
-          var a = document.createElement("a");
-          a.href = url;
-          a.style.display = "none";
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function () {
-            try { document.body.removeChild(a); } catch (e2) {}
-          }, 1000);
-        } catch (e) {
-          window.location.href = url;
-        }
-      }, 120);
-
+        try { document.body.removeChild(a); } catch (e) {}
+      }, 1500);
       return true;
     } catch (e) {
       console.warn("RawBT falhou", e);
@@ -311,17 +307,11 @@
       return;
     }
 
-    // Padrão: RawBT direto (sem diálogo do Chrome)
-    // 1) tenta ESC/POS base64 (senha grande)
     var esc = montarEscPosCupom(numero, tipo, servico, hora);
     var ok = printRawBT(binaryToBase64(esc), true);
-
     if (!ok) {
-      // 2) texto UTF-8 via intent
-      var txt = montarTextoCupom(numero, tipo, servico, hora);
-      ok = printRawBT(txt, false);
+      ok = printRawBT(montarTextoCupom(numero, tipo, servico, hora), false);
     }
-
     if (!ok && cfg.printFallbackBrowser !== false) {
       try { window.print(); } catch (err) { console.warn(err); }
     }
@@ -330,20 +320,27 @@
   function montarImpressao(numero, tipo, servico, hora) {
     var area = $("printArea");
     if (!area) return;
-    var titulo = cfg.unidadeNomeCurto || cfg.unidadeNome || "2º Ofício de Notas e Registro de Imóveis";
+    var titulo = cfg.unidadeNomeCurto || "2º Ofício — Tabuleiro do Norte/CE";
     var tipoTxt = String(tipo || "").toUpperCase();
+    var showLogo = cfg.printShowLogo === true;
     var logoSrc = cfg.logoUrl || "assets/logo-cartorio.png";
+    var head = showLogo
+      ? '<div class="print-head">' +
+        '<img class="print-logo" src="' + logoSrc + '" alt="" />' +
+        '<p class="print-brand">' + titulo + "</p>" +
+        "</div>"
+      : '<div class="print-head print-head-text">' +
+        '<p class="print-brand">' + titulo + "</p>" +
+        "</div>";
+
     area.innerHTML =
       '<div class="print-ticket">' +
-      '<div class="print-head">' +
-      '<img class="print-logo" src="' + logoSrc + '" alt="" />' +
-      '<p class="print-brand">' + titulo + "</p>" +
-      "</div>" +
+      head +
       '<p class="print-type">' + tipoTxt + "</p>" +
       '<p class="print-num">' + numero + "</p>" +
-      (servico ? '<p class="print-svc">' + servico + "</p>" : "") +
       '<p class="print-time">' + hora + "</p>" +
       '<p class="print-msg">Aguarde ser chamado</p>' +
+      '<div class="print-tail"></div>' +
       "</div>";
   }
 

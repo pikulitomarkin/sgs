@@ -21,8 +21,13 @@ Em `totem/config.js`:
 printMode: "browser",
 ```
 
-## Se não imprimir
+## Importante — logo enorme no papel
 
-- Confirme que o RawBT está aberto e a impressora online.
-- Teste no RawBT o botão de impressão de teste.
-- Se precisar do diálogo antigo: `printMode: "browser"`.
+Se ainda sair um **bloco preto grande** com a logo no topo, isso vem do **RawBT**, não do totem.
+
+No app RawBT:
+1. Settings / Configurações
+2. Desative **Print logo** / **Cabeçalho** / imagem padrão
+3. Salve e teste de novo
+
+O totem agora imprime só texto (sem imagem) + senha grande + avanço de papel antes do corte.
